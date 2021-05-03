@@ -141,13 +141,19 @@ class Board {
     return this.isSideAvailableForCastle(king, [oneOver, twoOver, threeOver], "a");
   }
 
-  isSideAvailableForCastle(king, openSquares, rookFile) {
+  isSideAvailableForCastle(king, orderedOpenSquares, rookFile) {
     const [rook] = this.filter(piece => piece.isLetter("R") && piece.file === rookFile && !piece.isOpposingPiece(king));
     const otherPieces = this.filter(piece => piece.isOpposingPiece(king));
-    return rook && !openSquares.some(square => this.get(square)) && !king.hasMoved && !rook.hasMoved && !this.isKingInCheck(king.letter) && !otherPieces.some(piece => {
-      const attackedSquares = piece.getSquaresAttacked(this).map(String);
-      return attackedSquares.some(square => openSquares.map(String).includes(square));
-    });
+    return (
+      rook &&
+      !king.hasMoved &&
+      !rook.hasMoved &&
+      !orderedOpenSquares.some(square => this.get(square)) &&
+      !this.isKingInCheck(king.letter) &&
+      // Only check the first square over since castles that put the king in check will be filtered out of legal moves
+      // Maybe this is a dumb thing to rely on or maybe better to do this check as part of legal move filtering
+      !otherPieces.some(piece => piece.getSquaresAttacked(this).map(String).includes(String(orderedOpenSquares[0])))
+    );
   }
 
   getPieces() {

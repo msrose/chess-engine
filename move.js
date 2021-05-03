@@ -32,6 +32,7 @@ class RegularMove {
     const possiblePieces = board.getPieces().filter(piece => {
         return piece.isLetter(this.letter) &&
           piece.getLegalMoves(board)
+            // excludes castling moves from consideration, which will have length two
             .filter(execution => execution.length === 1)
             .map(execution => String(execution[0][1]))
             .includes(String(this.destination)) &&

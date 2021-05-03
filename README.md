@@ -1,6 +1,6 @@
 # chess-engine
 
 TODO:
-* castling
+* ~castling~
 * en passant
 * promotion
