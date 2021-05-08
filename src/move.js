@@ -38,7 +38,9 @@ class RegularMove {
         // exclude castling moves
         execution.map(([{ letter }]) => letter).join("").toUpperCase() !== "KR" &&
         // exclude moves where the first piece moved does not end up at the expected destination
-        String(execution[0][1]) === String(this.destination)
+        String(execution[0][1]) === String(this.destination) &&
+        // exclude pawn moves to eighth rank that don't promote to same piece
+        (!this.promotion || execution[1]?.[0].letter.toUpperCase() === this.promotion.toUpperCase())
       );
     });
   }

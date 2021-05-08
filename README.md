@@ -2,5 +2,5 @@
 
 TODO:
 * ~castling~
-* en passant
-* promotion
+* ~en passant~
+* ~promotion~

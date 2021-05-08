@@ -68,34 +68,38 @@ class Piece {
       if (this.rank === "2" && !board.get(this.square.withRank("3")) && !board.get(twoMove)) {
         squares.push(twoMove);
       }
-      const oneMove = this.square.incrementRank(1)
-      if (!board.get(oneMove) && this.rank !== "7") {
-        squares.push(oneMove);
-      }
-      const rightDiag = this.square.increment(1, 1);
-      if (!board.get(rightDiag)) {
-        squares = squares.filter(square => String(square) !== String(rightDiag))
-      }
-      const leftDiag = this.square.increment(-1, 1);
-      if (!board.get(leftDiag)) {
-        squares = squares.filter(square => String(square) !== String(leftDiag))
+      if (this.rank !== "7") {
+        const oneMove = this.square.incrementRank(1)
+        if (!board.get(oneMove)) {
+          squares.push(oneMove);
+        }
+        const rightDiag = this.square.increment(1, 1);
+        if (!board.get(rightDiag)) {
+          squares = squares.filter(square => String(square) !== String(rightDiag))
+        }
+        const leftDiag = this.square.increment(-1, 1);
+        if (!board.get(leftDiag)) {
+          squares = squares.filter(square => String(square) !== String(leftDiag))
+        }
       }
     } else if (this.letter === "p") {
       const twoMove = this.square.withRank("5")
       if (this.rank === "7" && !board.get(this.square.withRank("6")) && !board.get(twoMove)) {
         squares.push(twoMove);
       }
-      const oneMove = this.square.incrementRank(-1);
-      if (!board.get(oneMove) && this.rank !== "2") {
-        squares.push(oneMove);
-      }
-      const rightDiag = this.square.increment(-1, -1);
-      if (!board.get(rightDiag)) {
-        squares = squares.filter(square => String(square) !== String(rightDiag))
-      }
-      const leftDiag = this.square.increment(1, -1);
-      if (!board.get(leftDiag)) {
-        squares = squares.filter(square => String(square) !== String(leftDiag))
+      if (this.rank !== "2") {
+        const oneMove = this.square.incrementRank(-1);
+        if (!board.get(oneMove)) {
+          squares.push(oneMove);
+        }
+        const rightDiag = this.square.increment(-1, -1);
+        if (!board.get(rightDiag)) {
+          squares = squares.filter(square => String(square) !== String(rightDiag))
+        }
+        const leftDiag = this.square.increment(1, -1);
+        if (!board.get(leftDiag)) {
+          squares = squares.filter(square => String(square) !== String(leftDiag))
+        }
       }
     }
     const executions = squares
@@ -140,7 +144,44 @@ class Piece {
         }
       }
     }
+    if (this.letter === "P") {
+      if (this.rank === "7") {
+        const oneMove = this.square.incrementRank(1);
+        if (!board.get(oneMove)) {
+          executions.push(...this.getPromotionMoves(oneMove));
+        }
+        const rightDiag = this.square.increment(1, 1);
+        if (board.get(rightDiag) && board.get(rightDiag).isOpposingPiece(this)) {
+          executions.push(...this.getPromotionMoves(rightDiag));
+        }
+        const leftDiag = this.square.increment(-1, 1);
+        if (board.get(leftDiag) && board.get(leftDiag).isOpposingPiece(this)) {
+          executions.push(...this.getPromotionMoves(leftDiag));
+        }
+      }
+    } else if (this.letter === "p") {
+      if (this.rank === "2") {
+        const oneMove = this.square.incrementRank(-1);
+        if (!board.get(oneMove)) {
+          executions.push(...this.getPromotionMoves(oneMove));
+        }
+        const rightDiag = this.square.increment(-1, -1);
+        if (board.get(rightDiag) && board.get(rightDiag).isOpposingPiece(this)) {
+          executions.push(...this.getPromotionMoves(rightDiag));
+        }
+        const leftDiag = this.square.increment(1, -1);
+        if (board.get(leftDiag) && board.get(leftDiag).isOpposingPiece(this)) {
+          executions.push(...this.getPromotionMoves(leftDiag));
+        }
+      }
+    }
     return executions.filter(execution => board.simulate(execution).isStateValid());
+  }
+
+  getPromotionMoves(square) {
+    return ["N", "B", "R", "Q"].map(promotionPiece =>
+      [[this, square], [new Piece(this.isWhite() ? promotionPiece : promotionPiece.toLowerCase(), square, true), square]]
+    )
   }
 
   traverse(board, multipliers) {
