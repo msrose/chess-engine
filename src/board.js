@@ -83,14 +83,19 @@ class Board {
   }
 
   copy() {
-    const copy = this.board.slice().map(rank => rank.slice());
+    const copy = this.board.slice().map(rank => rank.slice().map(piece => piece && piece.copy()));
     return new Board(copy, this.toMove);
   }
 
   update(execution) {
+    this.filter(piece => piece).forEach(piece => {
+      piece.expireEnPassantCandidacy();
+    });
     execution.forEach(([piece, destination]) => {
       this.clear(piece.square);
-      this.set(destination, piece.move(destination));
+      if (destination) {
+        this.set(destination, piece.move(destination));
+      }
     });
     this.toMove = this.toMove === "WHITE" ? "BLACK" : "WHITE";
   }

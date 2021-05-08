@@ -1,13 +1,13 @@
 const Square = require('./square');
 
 function parseMove(moveString) {
-  if (moveString === "O-O") {
+  if (moveString.toUpperCase() === "O-O") {
     return new KingsideCastle();
   }
-  if (moveString === "O-O-O") {
+  if (moveString.toUpperCase() === "O-O-O") {
     return new QueensideCastle();
   }
-  let fullMove = moveString.replace("x", "");
+  let [fullMove, promotion] = moveString.replace("x", "").split("=");
   let disambiguator = "";
   if ("abcdefgh".includes(moveString[0])) {
     fullMove = "p" + fullMove;
@@ -18,27 +18,29 @@ function parseMove(moveString) {
   }
   let [piece, file, rank] = fullMove.split("");
   const destination = new Square(file, rank);
-  return new RegularMove(piece.toUpperCase(), disambiguator, destination);
+  return new RegularMove(piece.toUpperCase(), disambiguator, destination, promotion);
 }
 
 class RegularMove {
-  constructor(letter, disambiguator, destination) {
+  constructor(letter, disambiguator, destination, promotion) {
     this.letter = letter;
     this.disambiguator = disambiguator;
     this.destination = destination;
+    this.promotion = promotion;
   }
 
   getExecutions(board) {
-    const possiblePieces = board.getPieces().filter(piece => {
-        return piece.isLetter(this.letter) &&
-          piece.getLegalMoves(board)
-            // excludes castling moves from consideration, which will have length two
-            .filter(execution => execution.length === 1)
-            .map(execution => String(execution[0][1]))
-            .includes(String(this.destination)) &&
-          piece.matchesDisambiguator(this.disambiguator);
+    return board.getPieces().flatMap(piece => {
+      if (!piece.isLetter(this.letter) || !piece.matchesDisambiguator(this.disambiguator)) {
+        return [];
+      }
+      return piece.getLegalMoves(board).filter(execution =>
+        // exclude castling moves
+        execution.map(([{ letter }]) => letter).join("").toUpperCase() !== "KR" &&
+        // exclude moves where the first piece moved does not end up at the expected destination
+        String(execution[0][1]) === String(this.destination)
+      );
     });
-    return possiblePieces.map(piece => [[piece, this.destination]]);
   }
 }
 

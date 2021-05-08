@@ -1,10 +1,15 @@
 const {KingsideCastle, QueensideCastle} = require('./move');
 
 class Piece {
-  constructor(letter, square, hasMoved = false) {
+  constructor(letter, square, hasMoved = false, isEnPassantCandidate = false) {
     this.letter = letter;
     this.square = square;
     this.hasMoved = hasMoved;
+    this.isEnPassantCandidate = isEnPassantCandidate;
+  }
+
+  copy() {
+    return new Piece(this.letter, this.square, this.hasMoved, this.isEnPassantCandidate);
   }
 
   get file() {
@@ -64,7 +69,7 @@ class Piece {
         squares.push(twoMove);
       }
       const oneMove = this.square.incrementRank(1)
-      if (!board.get(oneMove)) {
+      if (!board.get(oneMove) && this.rank !== "7") {
         squares.push(oneMove);
       }
       const rightDiag = this.square.increment(1, 1);
@@ -81,7 +86,7 @@ class Piece {
         squares.push(twoMove);
       }
       const oneMove = this.square.incrementRank(-1);
-      if (!board.get(oneMove)) {
+      if (!board.get(oneMove) && this.rank !== "2") {
         squares.push(oneMove);
       }
       const rightDiag = this.square.increment(-1, -1);
@@ -99,6 +104,41 @@ class Piece {
     if (this.letter.toUpperCase() === "K") {
       executions.push(...new KingsideCastle().getExecutions(board));
       executions.push(...new QueensideCastle().getExecutions(board));
+    }
+    if (this.letter === "P") {
+      if (this.rank === "5") {
+        const left = board.get(this.square.incrementFile(-1));
+        if (left && left.isEnPassantCandidate && left.isOpposingPiece(this)) {
+          executions.push([
+            [this, this.square.increment(-1, 1)],
+            [left, undefined]
+          ]);
+        }
+        const right = board.get(this.square.incrementFile(1));
+        if (right && right.isEnPassantCandidate && right.isOpposingPiece(this)) {
+          executions.push([
+            [this, this.square.increment(1, 1)],
+            [right, undefined]
+          ]);
+        }
+      }
+    } else if (this.letter === "p") {
+      if (this.rank === "4") {
+        const left = board.get(this.square.incrementFile(1));
+        if (left && left.isEnPassantCandidate && left.isOpposingPiece(this)) {
+          executions.push([
+            [this, this.square.increment(1, -1)],
+            [left, undefined]
+          ]);
+        }
+        const right = board.get(this.square.incrementFile(-1));
+        if (right && right.isEnPassantCandidate && right.isOpposingPiece(this)) {
+          executions.push([
+            [this, this.square.increment(-1, -1)],
+            [right, undefined]
+          ]);
+        }
+      }
     }
     return executions.filter(execution => board.simulate(execution).isStateValid());
   }
@@ -123,7 +163,12 @@ class Piece {
   }
 
   move(destination) {
-    return new Piece(this.letter, destination, true);
+    const isEnPassantCandidate = this.letter.toUpperCase() === "P" && Math.abs(this.rank - destination.rank) === 2;
+    return new Piece(this.letter, destination, true, isEnPassantCandidate);
+  }
+
+  expireEnPassantCandidacy() {
+    this.isEnPassantCandidate = false;
   }
 
   isLetter(letter) {
