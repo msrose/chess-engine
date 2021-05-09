@@ -122,6 +122,32 @@ class KingSafetySelector {
   }
 }
 
+class DevelopmentSelector {
+  select(board, candidates) {
+    const sorted = candidates.slice().sort((a, b) => {
+      const developmentA = this.countDevelopment(board.simulate(a));
+      const developmentB = this.countDevelopment(board.simulate(b));
+      return board.toMove === "WHITE" ? developmentB - developmentA : developmentA - developmentB;
+    });
+    const best = this.countDevelopment(board.simulate(sorted[0]));
+    const final = [];
+    for (const move of sorted) {
+      if (this.countDevelopment(board.simulate(move)) === best) {
+        final.push(move);
+      } else {
+        break;
+      }
+    }
+    return final;
+  }
+
+  countDevelopment(board) {
+    const white = board.filter(piece => piece.isWhite()).reduce((total, piece) => total + piece.getSquaresAttacked(board).length, 0);
+    const black = board.filter(piece => piece.isBlack()).reduce((total, piece) => total + piece.getSquaresAttacked(board).length, 0);
+    return white - black;
+  }
+}
+
 class CentreControlSelector {
   select(board, candidates) {
     const sorted = candidates.slice().sort((a, b) => {
@@ -174,6 +200,9 @@ class Engine {
       new CheckmateDefenseSelector(),
       new MaterialSelector(),
       new KingSafetySelector(),
+      // Development before centre control will play e4
+      new DevelopmentSelector(),
+      // Centre control before development will play d4
       new CentreControlSelector(),
       new RandomSelector()
     ]
