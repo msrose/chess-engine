@@ -1,11 +1,12 @@
 const {KingsideCastle, QueensideCastle} = require('./move');
 
 class Piece {
-  constructor(letter, square, hasMoved = false, isEnPassantCandidate = false) {
+  constructor(letter, square, hasMoved = false, isEnPassantCandidate = false, hasCastled = false) {
     this.letter = letter;
     this.square = square;
     this.hasMoved = hasMoved;
     this.isEnPassantCandidate = isEnPassantCandidate;
+    this.hasCastled = hasCastled;
   }
 
   copy() {
@@ -205,7 +206,9 @@ class Piece {
 
   move(destination) {
     const isEnPassantCandidate = this.letter.toUpperCase() === "P" && Math.abs(this.rank - destination.rank) === 2;
-    return new Piece(this.letter, destination, true, isEnPassantCandidate);
+    const files = "abcdefgh".split("");
+    const hasCastled = this.letter.toUpperCase() === "K" && Math.abs(files.findIndex(f => f === this.file) - files.findIndex(f => f === destination.file)) === 2;
+    return new Piece(this.letter, destination, true, isEnPassantCandidate, hasCastled);
   }
 
   expireEnPassantCandidacy() {

@@ -36,9 +36,6 @@ class MaterialSelector {
       const materialB = getMaterial(b);
       return board.toMove === "WHITE" ? materialB - materialA : materialA - materialB;
     });
-    // for (const [key, value] of cache) {
-    //   console.log(key[0][0].letter, String(key[0][1]), value)
-    // }
     const best = getMaterial(sorted[0]);
     const final = [];
     for (const move of sorted) {
@@ -58,13 +55,105 @@ class MaterialSelector {
       return score;
     }
     const nextCounts = next.getLegalMoves().map(move => this.countNextMaterial(next, move, depth - 1));
-    return nextCounts.reduce((max, val) => Math.abs(val) > Math.abs(max) ? val : max, score)
+    if (nextCounts.length === 0) {
+      return score;
+    }
+    return nextCounts.reduce((max, val) => Math.abs(val) > Math.abs(max) ? val : max, 0)
   }
 
   countMaterial(board) {
     const reducer = (total, piece) => {
       return total + ({Q: 9, R: 5, B: 3, N: 3, P: 1}[piece.letter.toUpperCase()] || 0);
     };
+    const white = board.filter(piece => piece.isWhite()).reduce(reducer, 0);
+    const black = board.filter(piece => piece.isBlack()).reduce(reducer, 0);
+    return white - black;
+  }
+}
+
+class KingSafetySelector {
+  select(board, candidates) {
+    const sorted = candidates.slice().sort((a, b) => {
+      const safetyA = this.countKingSafety(board.simulate(a));
+      const safetyB = this.countKingSafety(board.simulate(b));
+      return board.toMove === "WHITE" ? safetyB - safetyA : safetyA - safetyB;
+    });
+    const best = this.countKingSafety(board.simulate(sorted[0]));
+    const final = [];
+    for (const move of sorted) {
+      if (this.countKingSafety(board.simulate(move)) === best) {
+        final.push(move);
+      } else {
+        break;
+      }
+    }
+    return final;
+  }
+
+  countKingSafety(board) {
+    const [whiteKing] = board.filter(piece => piece.letter === "K");
+    const [blackKing] = board.filter(piece => piece.letter === "k");
+    let white = 0;
+    let black = 0;
+    white -= whiteKing.rank - 1;
+    white += (16 - board.filter(piece => piece.isBlack()).length) / 2;
+    if (whiteKing.hasCastled) {
+      white += 3;
+    }
+    if (board.isKingsideAvailableForCastle(whiteKing)) {
+      white++;
+    }
+    if (board.isQueensideAvailableForCastle(whiteKing)) {
+      white++;
+    }
+    black -= 8 - blackKing.rank;
+    black += (16 - board.filter(piece => piece.isWhite()).length) / 2;
+    if (blackKing.hasCastled) {
+      black += 3;
+    }
+    if (board.isKingsideAvailableForCastle(blackKing)) {
+      black++;
+    }
+    if (board.isQueensideAvailableForCastle(blackKing)) {
+      black++;
+    }
+    return white - black;
+  }
+}
+
+class CentreControlSelector {
+  select(board, candidates) {
+    const sorted = candidates.slice().sort((a, b) => {
+      const controlA = this.countCentreControl(board.simulate(a));
+      const controlB = this.countCentreControl(board.simulate(b));
+      return board.toMove === "WHITE" ? controlB - controlA : controlA - controlB;
+    });
+    const best = this.countCentreControl(board.simulate(sorted[0]));
+    const final = [];
+    for (const move of sorted) {
+      if (this.countCentreControl(board.simulate(move)) === best) {
+        final.push(move);
+      } else {
+        break;
+      }
+    }
+    return final;
+  }
+
+  countCentreControl(board) {
+    const centreSquares = ["e4", "e5", "d4", "d5"];
+    const reducer = (total, piece) => {
+      let score = 0;
+      if (centreSquares.includes(piece.square.toString())) {
+        score++;
+      }
+      const squaresAttacked = piece.getSquaresAttacked(board).map(String);
+      score += squaresAttacked.filter(square => centreSquares.includes(square)).length;
+      if (!piece.hasMoved) {
+        score++;
+      }
+      return total + score;
+    }
     const white = board.filter(piece => piece.isWhite()).reduce(reducer, 0);
     const black = board.filter(piece => piece.isBlack()).reduce(reducer, 0);
     return white - black;
@@ -83,6 +172,9 @@ class Engine {
       new CheckmateSelector(),
       new CheckmateDefenseSelector(),
       new MaterialSelector(),
+      // Weird stuff happens when enabling king safety, leave off for now
+      // new KingSafetySelector(),
+      new CentreControlSelector(),
       new RandomSelector()
     ]
   }
