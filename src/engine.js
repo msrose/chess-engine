@@ -26,17 +26,23 @@ class CheckmateDefenseSelector {
 class MaterialSelector {
   select(board, candidates) {
     const cache = new Map();
+    const getMaterial = move => {
+      const material = cache.has(move) ? cache.get(move) : this.countNextMaterial(board, move);
+      cache.set(move, material);
+      return material;
+    }
     const sorted = candidates.slice().sort((a, b) => {
-      const materialA = cache.has(a) ? cache.get(a) : this.countMaterial(board, a);
-      cache.set(a, materialA);
-      const materialB = cache.has(b) ? cache.get(b) : this.countMaterial(board, b);
-      cache.set(b, materialB);
+      const materialA = getMaterial(a);
+      const materialB = getMaterial(b);
       return board.toMove === "WHITE" ? materialB - materialA : materialA - materialB;
     });
-    const best = cache.has(sorted[0]) ? cache.get(sorted[0]) : this.countMaterial(board, sorted[0]);
+    // for (const [key, value] of cache) {
+    //   console.log(key[0][0].letter, String(key[0][1]), value)
+    // }
+    const best = getMaterial(sorted[0]);
     const final = [];
     for (const move of sorted) {
-      if ((cache.has(move) ? cache.get(move) : this.countMaterial(board, move)) === best) {
+      if (getMaterial(move) === best) {
         final.push(move);
       } else {
         break;
@@ -45,19 +51,23 @@ class MaterialSelector {
     return final;
   }
 
-  countMaterial(board, move, depth = 1) {
+  countNextMaterial(board, move, depth = 1) {
     const next = board.simulate(move);
-    const reducer = (total, piece) => {
-      return total + ({Q: 9, R: 5, B: 3, N: 3, P: 1}[piece.letter.toUpperCase()] || 0);
-    };
-    const white = next.filter(piece => piece.isWhite()).reduce(reducer, 0);
-    const black = next.filter(piece => piece.isBlack()).reduce(reducer, 0);
-    const score = white - black;
+    const score = this.countMaterial(next);
     if (depth === 0) {
       return score;
     }
-    const nextCounts = next.getLegalMoves().map(move => this.countMaterial(next, move, depth - 1));
+    const nextCounts = next.getLegalMoves().map(move => this.countNextMaterial(next, move, depth - 1));
     return nextCounts.reduce((max, val) => Math.abs(val) > Math.abs(max) ? val : max, score)
+  }
+
+  countMaterial(board) {
+    const reducer = (total, piece) => {
+      return total + ({Q: 9, R: 5, B: 3, N: 3, P: 1}[piece.letter.toUpperCase()] || 0);
+    };
+    const white = board.filter(piece => piece.isWhite()).reduce(reducer, 0);
+    const black = board.filter(piece => piece.isBlack()).reduce(reducer, 0);
+    return white - black;
   }
 }
 
