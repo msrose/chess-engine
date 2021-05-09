@@ -31,7 +31,7 @@ class MaterialSelector {
       cache.set(a, materialA);
       const materialB = cache.has(b) ? cache.get(b) : this.countMaterial(board, b);
       cache.set(b, materialB);
-      return this.toMove === "WHITE" ? materialB - materialA : materialA - materialB;
+      return board.toMove === "WHITE" ? materialB - materialA : materialA - materialB;
     });
     const best = cache.has(sorted[0]) ? cache.get(sorted[0]) : this.countMaterial(board, sorted[0]);
     const final = [];
