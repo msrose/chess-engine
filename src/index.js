@@ -1,5 +1,6 @@
 const readline = require('readline');
 const Board = require('./board');
+const Engine = require('./engine');
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -7,6 +8,7 @@ const rl = readline.createInterface({
 });
 
 const board = new Board();
+const engine = new Engine();
 
 (function handleMove() {
   board.print();
@@ -21,6 +23,13 @@ const board = new Board();
           process.exit(0);
         }
       });
+      board.print();
+      engine.move(board);
+      if (board.isGameOver()) {
+        board.print();
+        console.log(board.getResult())
+        process.exit(0);
+      }
     } catch (e) {
       console.log(e);
     }
