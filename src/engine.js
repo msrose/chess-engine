@@ -27,9 +27,7 @@ class MaterialSelector {
   select(board, candidates) {
     const cache = new Map();
     const getMaterial = move => {
-      const material = cache.has(move) ? cache.get(move) : this.countNextMaterial(board, move);
-      cache.set(move, material);
-      return material;
+      return this.countNextMaterial(board, move, cache);
     }
     const sorted = candidates.slice().sort((a, b) => {
       const materialA = getMaterial(a);
@@ -48,17 +46,26 @@ class MaterialSelector {
     return final;
   }
 
-  countNextMaterial(board, move, depth = 1) {
+  countNextMaterial(board, move, cache, depth = 2) {
     const next = board.simulate(move);
+    const executionString = move.map(([piece, destination]) => `${piece.letter}${piece.square}${destination}`).join("");
+    const cacheKey = `${board}${executionString}`;
+    if (cache.has(cacheKey)) {
+      return cache.get(cacheKey);
+    }
     const score = this.countMaterial(next);
     if (depth === 0) {
+      cache.set(cacheKey, score);
       return score;
     }
-    const nextCounts = next.getLegalMoves().map(move => this.countNextMaterial(next, move, depth - 1));
+    const nextCounts = next.getLegalMoves().map(move => this.countNextMaterial(next, move, cache, depth - 1));
     if (nextCounts.length === 0) {
+      cache.set(cacheKey, score);
       return score;
     }
-    return nextCounts.reduce((max, val) => Math.abs(val) > Math.abs(max) ? val : max, 0)
+    const childScore = next.toMove === "WHITE" ? Math.max(...nextCounts) : Math.min(...nextCounts);
+    cache.set(cacheKey, childScore);
+    return childScore;
   }
 
   countMaterial(board) {
@@ -211,7 +218,11 @@ class Engine {
   move(board) {
     let candidates = board.getLegalMoves();
     for (const selector of this.selectors) {
+      process.stdout.write(selector.constructor.name + "...");
+      const start = Date.now();
       candidates = selector.select(board, candidates);
+      const end = Date.now();
+      console.log(end - start);
       if (candidates.length === 1) {
         board.update(candidates[0]);
         candidates[0].forEach(([piece, destination]) => {

@@ -39,6 +39,10 @@ class Board {
     process.stdout.write("    a b c d e f g h\n");
   }
 
+  toString() {
+    return this.board.map(rank => rank.map(piece => piece?.letter || "_").join("")).join("") + "|" + this.toMove;
+  }
+
   put(...pieceSquares) {
     pieceSquares.forEach(pieceSquare => {
       const [piece, file, rank] = pieceSquare.split("");
