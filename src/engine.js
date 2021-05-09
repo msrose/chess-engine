@@ -95,8 +95,9 @@ class KingSafetySelector {
     const [blackKing] = board.filter(piece => piece.letter === "k");
     let white = 0;
     let black = 0;
-    white -= whiteKing.rank - 1;
-    white += (16 - board.filter(piece => piece.isBlack()).length) / 2;
+    // Kings get stuck to back rank with this, leave off for now
+    // white -= whiteKing.rank - 1;
+    // white += (16 - board.filter(piece => piece.isBlack()).length) / 2;
     if (whiteKing.hasCastled) {
       white += 3;
     }
@@ -106,8 +107,8 @@ class KingSafetySelector {
     if (board.isQueensideAvailableForCastle(whiteKing)) {
       white++;
     }
-    black -= 8 - blackKing.rank;
-    black += (16 - board.filter(piece => piece.isWhite()).length) / 2;
+    // black -= 8 - blackKing.rank;
+    // black += (16 - board.filter(piece => piece.isWhite()).length) / 2;
     if (blackKing.hasCastled) {
       black += 3;
     }
@@ -172,8 +173,7 @@ class Engine {
       new CheckmateSelector(),
       new CheckmateDefenseSelector(),
       new MaterialSelector(),
-      // Weird stuff happens when enabling king safety, leave off for now
-      // new KingSafetySelector(),
+      new KingSafetySelector(),
       new CentreControlSelector(),
       new RandomSelector()
     ]

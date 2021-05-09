@@ -11,8 +11,8 @@ const board = new Board();
 const engine = new Engine();
 
 // To have engine play white
-// board.print();
-// engine.move(board);
+board.print();
+engine.move(board);
 
 (function handleMove() {
   board.print();
@@ -20,9 +20,9 @@ const engine = new Engine();
   rl.question("Enter moves: ", answer => {
     try {
       answer.split(" ").filter(Boolean).forEach(move => {
-        board.move(move);
+        // board.move(move);
         // To have engine play itself
-        // engine.move(board);
+        engine.move(board);
         if (board.isGameOver()) {
           board.print();
           console.log(board.getResult())
