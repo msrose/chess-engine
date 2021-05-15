@@ -1,12 +1,20 @@
 class CheckmateSelector {
   select(board, candidates) {
-    for (const move of candidates) {
+    const move = this.getMateInOne(board) || candidates.find(move => {
       const next = board.simulate(move);
-      if (next.isCheckmate()) {
-        return [move];
-      }
+      return next.getLegalMoves().every(move => {
+        const nextNext = next.simulate(move);
+        return this.getMateInOne(nextNext);
+      });
+    });
+    if (move) {
+      return [move];
     }
     return [];
+  }
+
+  getMateInOne(board) {
+    return board.getLegalMoves().find(move => board.simulate(move).isCheckmate());
   }
 }
 
@@ -201,7 +209,9 @@ class RandomSelector {
 }
 
 class Engine {
-  constructor() {
+  constructor({ verbose = false } = {}) {
+    this.verbose = verbose;
+
     this.selectors = [
       new CheckmateSelector(),
       new CheckmateDefenseSelector(),
@@ -218,14 +228,33 @@ class Engine {
   move(board) {
     let candidates = board.getLegalMoves();
     for (const selector of this.selectors) {
-      candidates = selector.select(board, candidates);
       if (candidates.length === 1) {
-        return board.update(candidates[0]);
-      } else if (candidates.length === 0) {
-        candidates = board.getLegalMoves();
+        break;
+      }
+      this.log(selector.constructor.name + "...");
+      const [selected, duration] = this.time(() => selector.select(board, candidates));
+      this.log(duration + "\n");
+      if (selected.length > 0) {
+        candidates = selected;
       }
     }
-    throw new Error("Never narrowed down to one move!");
+    if (candidates.length !== 1) {
+      throw new Error("Never narrowed down to one move! " + candidates);
+    }
+    return board.update(candidates[0]);
+  }
+
+  log(arg) {
+    if (this.verbose) {
+      process.stdout.write(arg);
+    }
+  }
+
+  time(fn) {
+    const start = Date.now();
+    const result = fn();
+    const end = Date.now();
+    return [result, end - start];
   }
 }
 

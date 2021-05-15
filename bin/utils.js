@@ -10,21 +10,23 @@ function checkGameOver(board) {
   }
 }
 
+async function handleMove(board, handler) {
+  const move = await handler();
+  console.log(move);
+  checkGameOver(board);
+}
+
 function gameLoop(board, { white, black }) {
   setTimeout(async () => {
     board.print();
     console.log("===================");
     try {
       if (board.isWhiteToMove()) {
-        const move = await white();
-        console.log(move);
-        checkGameOver(board);
+        await handleMove(board, white);
         board.print();
       }
       if (board.isBlackToMove()) {
-        const move = await black();
-        console.log(move);
-        checkGameOver(board);
+        await handleMove(board, black);
       }
     } catch (e) {
       console.log(e);
@@ -55,8 +57,8 @@ function makePlayer(board) {
     });
 }
 
-function makeEngine(board) {
-  const engine = new Engine();
+function makeEngine(board, options) {
+  const engine = new Engine(options);
   return () => engine.move(board);
 }
 
