@@ -32,7 +32,7 @@ class MaterialSelector {
     const sorted = candidates.slice().sort((a, b) => {
       const materialA = getMaterial(a);
       const materialB = getMaterial(b);
-      return board.toMove === "WHITE" ? materialB - materialA : materialA - materialB;
+      return board.isWhiteToMove() ? materialB - materialA : materialA - materialB;
     });
     const best = getMaterial(sorted[0]);
     const final = [];
@@ -63,7 +63,7 @@ class MaterialSelector {
       cache.set(cacheKey, score);
       return score;
     }
-    const childScore = next.toMove === "WHITE" ? Math.max(...nextCounts) : Math.min(...nextCounts);
+    const childScore = next.isWhiteToMove() ? Math.max(...nextCounts) : Math.min(...nextCounts);
     cache.set(cacheKey, childScore);
     return childScore;
   }
@@ -83,7 +83,7 @@ class KingSafetySelector {
     const sorted = candidates.slice().sort((a, b) => {
       const safetyA = this.countKingSafety(board.simulate(a));
       const safetyB = this.countKingSafety(board.simulate(b));
-      return board.toMove === "WHITE" ? safetyB - safetyA : safetyA - safetyB;
+      return board.isWhiteToMove() ? safetyB - safetyA : safetyA - safetyB;
     });
     const best = this.countKingSafety(board.simulate(sorted[0]));
     const final = [];
@@ -134,7 +134,7 @@ class DevelopmentSelector {
     const sorted = candidates.slice().sort((a, b) => {
       const developmentA = this.countDevelopment(board.simulate(a));
       const developmentB = this.countDevelopment(board.simulate(b));
-      return board.toMove === "WHITE" ? developmentB - developmentA : developmentA - developmentB;
+      return board.isWhiteToMove() ? developmentB - developmentA : developmentA - developmentB;
     });
     const best = this.countDevelopment(board.simulate(sorted[0]));
     const final = [];
@@ -160,7 +160,7 @@ class CentreControlSelector {
     const sorted = candidates.slice().sort((a, b) => {
       const controlA = this.countCentreControl(board.simulate(a));
       const controlB = this.countCentreControl(board.simulate(b));
-      return board.toMove === "WHITE" ? controlB - controlA : controlA - controlB;
+      return board.isWhiteToMove() ? controlB - controlA : controlA - controlB;
     });
     const best = this.countCentreControl(board.simulate(sorted[0]));
     const final = [];

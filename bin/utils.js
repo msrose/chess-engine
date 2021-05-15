@@ -15,13 +15,13 @@ function gameLoop(board, { white, black }) {
     board.print();
     console.log("===================");
     try {
-      if (board.toMove === "WHITE") {
+      if (board.isWhiteToMove()) {
         const move = await white();
         console.log(move);
         checkGameOver(board);
         board.print();
       }
-      if (board.toMove === "BLACK") {
+      if (board.isBlackToMove()) {
         const move = await black();
         console.log(move);
         checkGameOver(board);

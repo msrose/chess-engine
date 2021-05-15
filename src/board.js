@@ -26,6 +26,14 @@ class Board {
     }
   }
 
+  isWhiteToMove() {
+    return this.toMove === "WHITE";
+  }
+
+  isBlackToMove() {
+    return !this.isWhiteToMove();
+  }
+
   print() {
     this.board.forEach((rank, rankNum) => {
       process.stdout.write(String(8 - rankNum + " | "))
@@ -106,7 +114,7 @@ class Board {
         this.set(destination, piece.move(destination));
       }
     });
-    this.toMove = this.toMove === "WHITE" ? "BLACK" : "WHITE";
+    this.toMove = this.isWhiteToMove() ? "BLACK" : "WHITE";
 
     const pieceCountAfter = this.filter(piece => piece).length;
 
@@ -131,7 +139,7 @@ class Board {
   }
 
   isStateValid() {
-    if (this.toMove === "WHITE") {
+    if (this.isWhiteToMove()) {
       return !this.isBlackKingInCheck();
     } else {
       return !this.isWhiteKingInCheck();
@@ -186,7 +194,7 @@ class Board {
   }
 
   getPieces() {
-    return this.filter(piece => this.toMove === "WHITE" ? piece.isWhite() : piece.isBlack());
+    return this.filter(piece => this.isWhiteToMove() ? piece.isWhite() : piece.isBlack());
   }
 
   getLegalMoves() {
@@ -195,7 +203,7 @@ class Board {
   }
 
   isCheckmate() {
-    return (this.toMove === "WHITE" ? this.isWhiteKingInCheck() : this.isBlackKingInCheck())
+    return (this.isWhiteToMove() ? this.isWhiteKingInCheck() : this.isBlackKingInCheck())
       && this.getLegalMoves().length === 0;
   }
 
@@ -204,7 +212,7 @@ class Board {
   }
 
   isStalemate() {
-    return !(this.toMove === "WHITE" ? this.isWhiteKingInCheck() : this.isBlackKingInCheck())
+    return !(this.isWhiteToMove() ? this.isWhiteKingInCheck() : this.isBlackKingInCheck())
       && this.getLegalMoves().length === 0;
   }
 
@@ -222,7 +230,7 @@ class Board {
 
   getResult() {
     if (this.isCheckmate()) {
-      return this.toMove === "WHITE" ? "0-1" : "1-0";
+      return this.isWhiteToMove() ? "0-1" : "1-0";
     } else if (this.isDraw()) {
       return "1/2-1/2";
     } else {
