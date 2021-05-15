@@ -4,6 +4,9 @@ const {parseMove} = require('./move');
 
 class Board {
   constructor(board, toMove) {
+    this.movesSinceCaptureOrPawn = 0;
+    this.seenPositions = new Map();
+
     if (board) {
       this.board = board;
     } else {
@@ -92,6 +95,8 @@ class Board {
   }
 
   update(execution) {
+    const pieceCountBefore = this.filter(piece => piece).length;
+
     this.filter(piece => piece).forEach(piece => {
       piece.expireEnPassantCandidacy();
     });
@@ -102,6 +107,17 @@ class Board {
       }
     });
     this.toMove = this.toMove === "WHITE" ? "BLACK" : "WHITE";
+
+    const pieceCountAfter = this.filter(piece => piece).length;
+
+    const boardString = this.toString();
+    this.seenPositions.set(boardString, (this.seenPositions.get(boardString) || 0) + 1);
+
+    if (pieceCountBefore !== pieceCountAfter || execution[0][0].letter.toUpperCase() === "P") {
+      this.movesSinceCaptureOrPawn = 0;
+    } else {
+      this.movesSinceCaptureOrPawn++;
+    }
   }
 
   simulate(execution) {
@@ -179,19 +195,31 @@ class Board {
       && this.getLegalMoves().length === 0;
   }
 
+  isDraw() {
+    return this.isStalemate() || this.isDrawByRepetition() || this.isDrawByFiftyMoves();
+  }
+
   isStalemate() {
     return !(this.toMove === "WHITE" ? this.isWhiteKingInCheck() : this.isBlackKingInCheck())
       && this.getLegalMoves().length === 0;
   }
 
+  isDrawByRepetition() {
+    return Array.from(this.seenPositions.values()).some(value => value === 3);
+  }
+
+  isDrawByFiftyMoves() {
+    return this.movesSinceCaptureOrPawn / 2 === 50;
+  }
+
   isGameOver() {
-    return this.isCheckmate() || this.isStalemate();
+    return this.isCheckmate() || this.isDraw();
   }
 
   getResult() {
     if (this.isCheckmate()) {
       return this.toMove === "WHITE" ? "0-1" : "1-0";
-    } else if (this.isStalemate()) {
+    } else if (this.isDraw()) {
       return "1/2-1/2";
     } else {
       return "";
