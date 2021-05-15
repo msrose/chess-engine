@@ -218,17 +218,9 @@ class Engine {
   move(board) {
     let candidates = board.getLegalMoves();
     for (const selector of this.selectors) {
-      process.stdout.write(selector.constructor.name + "...");
-      const start = Date.now();
       candidates = selector.select(board, candidates);
-      const end = Date.now();
-      console.log(end - start);
       if (candidates.length === 1) {
-        board.update(candidates[0]);
-        candidates[0].forEach(([piece, destination]) => {
-          console.log(`${piece.letter.toUpperCase() !== "P" ? piece.letter.toUpperCase() : ""}${destination.toString()}`);
-        });
-        return;
+        return board.update(candidates[0]);
       } else if (candidates.length === 0) {
         candidates = board.getLegalMoves();
       }

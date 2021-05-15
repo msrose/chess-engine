@@ -86,7 +86,7 @@ class Board {
     }
 
     const [finalExecution] = executions;
-    this.update(finalExecution);
+    return this.update(finalExecution);
   }
 
   copy() {
@@ -118,6 +118,10 @@ class Board {
     } else {
       this.movesSinceCaptureOrPawn++;
     }
+
+    return execution
+      .map(([piece, destination]) => `${piece.letter.toUpperCase().replace("P", "")}${piece.square}${destination}`)
+      .join();
   }
 
   simulate(execution) {
