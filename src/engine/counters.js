@@ -1,3 +1,7 @@
+function countCheckmate(board) {
+  return board.isCheckmate() ? board.isWhiteToMove() ? -1000000 : 1000000 : 0;
+}
+
 function countMaterial(board) {
   const reducer = (total, piece) => {
     return total + ({Q: 9, R: 5, B: 3, N: 3, P: 1}[piece.letter.toUpperCase()] || 0);
@@ -61,6 +65,7 @@ function countCentreControl(board) {
 }
 
 module.exports = {
+  countCheckmate,
   countMaterial,
   countKingSafety,
   countDevelopment,

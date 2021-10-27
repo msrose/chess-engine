@@ -39,12 +39,12 @@ function makeBoard() {
   return new Board();
 }
 
-function makePlayer(board) {
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
 
+function makePlayer(board) {
   return () =>
     new Promise((resolve, reject) => {
       rl.question("Enter move: ", answer => {

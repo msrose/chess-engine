@@ -212,8 +212,7 @@ class Board {
   }
 
   isStalemate() {
-    return !(this.isWhiteToMove() ? this.isWhiteKingInCheck() : this.isBlackKingInCheck())
-      && this.getLegalMoves().length === 0;
+    return !this.isCheckmate() && this.getLegalMoves().length === 0;
   }
 
   isDrawByRepetition() {
