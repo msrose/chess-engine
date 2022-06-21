@@ -25,3 +25,15 @@ impl Board {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn assert_board_has_grid() {
+        let board = Board::new();
+        assert_eq!(board.grid.len(), BOARD_SIZE);
+        assert_eq!(board.grid[0].len(), BOARD_SIZE);
+    }
+}
