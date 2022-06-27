@@ -3,11 +3,9 @@ mod game;
 mod square;
 mod piece;
 
-use board::Board;
 use game::Game;
 
 fn main() {
-    let board = Board::new();
-    let game = Game::new(board);
+    let game = Game::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
     game.print_board();
 }

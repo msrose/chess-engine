@@ -20,7 +20,21 @@ pub struct Piece {
 }
 
 impl Piece {
-    pub fn new(color: Color, kind: Kind) -> Piece {
+    pub fn from(letter: char) -> Piece {
+        let kind = match letter {
+            'K' | 'k' => Kind::King,
+            'Q' | 'q' => Kind::Queen,
+            'B' | 'b' => Kind::Bishop,
+            'N' | 'n' => Kind::Knight,
+            'R' | 'r' => Kind::Rook,
+            'P' | 'p' => Kind::Pawn,
+            _ => panic!("Unknown piece letter {}", letter)
+        };
+        let color = if letter.is_uppercase() {
+            Color::White
+        } else {
+            Color::Black
+        };
         Piece {
             color,
             kind

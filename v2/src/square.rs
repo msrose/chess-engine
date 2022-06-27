@@ -16,6 +16,11 @@ impl Square {
         }
     }
 
+    pub fn from(coord: &str) -> Square {
+        // TODO
+        Square::empty(0, 0)
+    }
+
     pub fn with_piece(rank: u8, file: u8, piece: Piece) -> Square {
         Square {
             piece: Some(piece),
