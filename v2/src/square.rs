@@ -21,11 +21,20 @@ impl Square {
         Square::empty(0, 0)
     }
 
+    pub fn to_coord(&self) -> String {
+        // TODO
+        String::from("TODO")
+    }
+
     pub fn with_piece(rank: u8, file: u8, piece: Piece) -> Square {
         Square {
             piece: Some(piece),
             ..Square::empty(rank, file)
         }
+    }
+
+    pub fn get_piece(&self) -> &Option<Piece> {
+        &self.piece
     }
 }
 

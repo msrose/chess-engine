@@ -1,8 +1,24 @@
 use std::fmt;
 
+type Result<T> = std::result::Result<T, PieceError>;
+
+pub enum PieceError {
+    InvalidLetter(char)
+}
+
 pub enum Color {
     White,
     Black
+}
+
+impl fmt::Display for Color {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let color_string = match *self {
+            Color::White => "w",
+            Color::Black => "b"
+        };
+        write!(f, "{}", color_string)
+    }
 }
 
 pub enum Kind {
@@ -20,25 +36,25 @@ pub struct Piece {
 }
 
 impl Piece {
-    pub fn from(letter: char) -> Piece {
+    pub fn from(letter: char) -> Result<Self> {
         let kind = match letter {
-            'K' | 'k' => Kind::King,
-            'Q' | 'q' => Kind::Queen,
-            'B' | 'b' => Kind::Bishop,
-            'N' | 'n' => Kind::Knight,
-            'R' | 'r' => Kind::Rook,
-            'P' | 'p' => Kind::Pawn,
-            _ => panic!("Unknown piece letter {}", letter)
-        };
+            'K' | 'k' => Ok(Kind::King),
+            'Q' | 'q' => Ok(Kind::Queen),
+            'B' | 'b' => Ok(Kind::Bishop),
+            'N' | 'n' => Ok(Kind::Knight),
+            'R' | 'r' => Ok(Kind::Rook),
+            'P' | 'p' => Ok(Kind::Pawn),
+            _ => Err(PieceError::InvalidLetter(letter))
+        }?;
         let color = if letter.is_uppercase() {
             Color::White
         } else {
             Color::Black
         };
-        Piece {
+        Ok(Piece {
             color,
             kind
-        }
+        })
     }
 }
 
